@@ -1,0 +1,35 @@
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model product_mst {
+  product_id   Int           @id(map: "PK_PRODUCT_MST") @default(autoincrement()) @map("PRODUCT_ID")
+  product_name String        @map("PRODUCT_NAME") @db.VarChar(150)
+  description  String?       @map("DESCRIPTION") @db.VarChar(500)
+  price        Decimal       @map("PRICE") @db.Decimal(18, 2)
+  stock        Int           @map("STOCK")
+  is_active    Boolean       @default(true, map: "DF_PRODUCT_MST_IS_ACTIVE") @map("IS_ACTIVE")
+  created_at   DateTime      @default(now(), map: "DF_PRODUCT_MST_CREATED_AT") @map("CREATED_AT")
+  updated_at   DateTime      @default(now(), map: "DF_PRODUCT_MST_UPDATED_AT") @updatedAt @map("UPDATED_AT")
+  transactions product_trx[]
+
+  @@map("PRODUCT_MST")
+}
+
+model product_trx {
+  transaction_id   BigInt      @id(map: "PK_PRODUCT_TRX") @default(autoincrement()) @map("TRANSACTION_ID")
+  transaction_code String      @unique(map: "UQ_PRODUCT_TRX_CODE") @map("TRANSACTION_CODE") @db.VarChar(50)
+  product_id       Int         @map("PRODUCT_ID")
+  transaction_date DateTime    @default(now(), map: "DF_PRODUCT_TRX_DATE") @map("TRANSACTION_DATE")
+  quantity         Int         @map("QUANTITY")
+  total_amount     Decimal     @map("TOTAL_AMOUNT") @db.Decimal(18, 2)
+  created_at       DateTime    @default(now(), map: "DF_PRODUCT_TRX_CREATED_AT") @map("CREATED_AT")
+  product          product_mst @relation(fields: [product_id], references: [product_id], onUpdate: NoAction, onDelete: NoAction, map: "FK_PRODUCT_TRX_PRODUCT")
+
+  @@map("PRODUCT_TRX")
+}
